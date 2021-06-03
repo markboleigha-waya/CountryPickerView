@@ -35,43 +35,14 @@ public func !=(lhs: Country, rhs: Country) -> Bool {
 }
 
 
-public class CountryPickerView: NibView {
-    @IBOutlet weak var spacingConstraint: NSLayoutConstraint!
-    @IBOutlet public weak var flagImageView: UIImageView! {
-        didSet {
-            flagImageView.clipsToBounds = true
-            flagImageView.layer.masksToBounds = true
-            flagImageView.layer.cornerRadius = 2
-        }
-    }
-    @IBOutlet public weak var countryDetailsLabel: UILabel!
+public class CountryPickerView: UIView {
     
-    /// Show/Hide the country code on the view.
-    public var showCountryCodeInView = true {
-        didSet {
-            if showCountryNameInView && showCountryCodeInView {
-                showCountryNameInView = false
-            } else {
-                setup()
-            }
-        }
-    }
-    
-    /// Show/Hide the phone code on the view.
-    public var showPhoneCodeInView = true {
-        didSet { setup() }
-    }
-    
-    /// Show/Hide the country name on the view.
-    public var showCountryNameInView = false {
-        didSet {
-            if showCountryCodeInView && showCountryNameInView {
-                showCountryCodeInView = false
-            } else {
-                setup()
-            }
-        }
-    }
+    lazy var countryDetailsLabel: UILabel = {
+        let txt = UILabel()
+        txt.translatesAutoresizingMaskIntoConstraints = false
+        txt.clipsToBounds = true
+        return txt
+    }()
     
     /// Change the font of phone code
     public var font = UIFont.systemFont(ofSize: 17.0) {
@@ -80,16 +51,6 @@ public class CountryPickerView: NibView {
     /// Change the text color of phone code
     public var textColor = UIColor.black {
         didSet { setup() }
-    }
-    
-    /// The spacing between the flag image and the text.
-    public var flagSpacingInView: CGFloat {
-        get {
-            return spacingConstraint.constant
-        }
-        set {
-            spacingConstraint.constant = newValue
-        }
     }
     
     weak public var dataSource: CountryPickerViewDataSource?
@@ -121,20 +82,28 @@ public class CountryPickerView: NibView {
     }
     
     func setup() {
-        flagImageView.image = selectedCountry.flag
         countryDetailsLabel.font = font
         countryDetailsLabel.textColor = textColor
-        if showCountryCodeInView && showPhoneCodeInView {
-            countryDetailsLabel.text = "(\(selectedCountry.code)) \u{202A}\(selectedCountry.phoneCode)\u{202C}"
-        } else if showCountryNameInView && showPhoneCodeInView {
-            countryDetailsLabel.text = "(\(selectedCountry.localizedName() ?? selectedCountry.name)) \u{202A}\(selectedCountry.phoneCode)\u{202C}"
-        } else if showCountryCodeInView || showPhoneCodeInView || showCountryNameInView {
-            countryDetailsLabel.text = showCountryCodeInView ? selectedCountry.code
-                : showPhoneCodeInView ? selectedCountry.phoneCode
-                : selectedCountry.localizedName() ?? selectedCountry.name
-        } else {
-            countryDetailsLabel.text = nil
-        }
+        countryDetailsLabel.text = selectedCountry.phoneCode
+        self.addSubview(countryDetailsLabel)
+        NSLayoutConstraint.activate([
+            countryDetailsLabel.topAnchor.constraint(equalTo: self.topAnchor),
+            countryDetailsLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            countryDetailsLabel.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor),
+            countryDetailsLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+        ])
+//        self.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showCountriesList(from:))))
+//        if showCountryCodeInView && showPhoneCodeInView {
+//            countryDetailsLabel.text = "(\(selectedCountry.code)) \u{202A}\(selectedCountry.phoneCode)\u{202C}"
+//        } else if showCountryNameInView && showPhoneCodeInView {
+//            countryDetailsLabel.text = "(\(selectedCountry.localizedName() ?? selectedCountry.name)) \u{202A}\(selectedCountry.phoneCode)\u{202C}"
+//        } else if showCountryCodeInView || showPhoneCodeInView || showCountryNameInView {
+//            countryDetailsLabel.text = showCountryCodeInView ? selectedCountry.code
+//                : showPhoneCodeInView ?
+//                : selectedCountry.localizedName() ?? selectedCountry.name
+//        } else {
+//            countryDetailsLabel.text = nil
+//        }
     }
     
     @IBAction func openCountryPickerController(_ sender: Any) {
